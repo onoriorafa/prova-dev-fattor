@@ -24,7 +24,7 @@ Esta pasta contém o material da prova técnica. Siga as etapas abaixo **na orde
 - Anote endpoints, métodos, headers e parâmetros necessários para uso na etapa seguinte.
 
 **URL da API Swagger (pública):**  
-*(a ser preenchida)*
+[*(Swagger)*](https://symphony.fattorcredito.com.br/public/prova-dev/swagger)
 
 ---
 
