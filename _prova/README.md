@@ -32,7 +32,7 @@ Esta pasta contém o material da prova técnica. Siga as etapas abaixo **na orde
 
 - Nesta pasta (`_prova`) há um arquivo no formato **CNAB 444**.
 - **Sua tarefa:**
-  1. **Descobrir o que é o arquivo**Fattpr - pesquise o padrão CNAB 444 (layout, uso no mercado, diferença em relação a outros CNAB).
+  1. **Descobrir o que é o arquivo** - pesquise o padrão CNAB 444 (layout, uso no mercado, diferença em relação a outros CNAB).
   2. **Documentar** no seu repositório:
      - o que é o formato CNAB 444;
      - qual a estrutura do arquivo (tipos de registro, posições, tamanho das linhas);
@@ -46,13 +46,13 @@ Esta pasta contém o material da prova técnica. Siga as etapas abaixo **na orde
 - Usando a API documentada no Swagger:
   - faça **login** e obtenha o token;
   - use a rota de **consulta de status** para cada um dos **itens relevantes** que você identificou e soube extrair do arquivo CNAB 444.
-- A rota de status utiliza o **path** (URL) para receber o identificadorFattpr - consulte a documentação para ver o formato exato.
+- A rota de status utiliza o **path** (URL) para receber o identificador - consulte a documentação para ver o formato exato.
 - Para cada item, o servidor retornará a **situação** (ex.: autorizada, cancelada, rejeitada etc.).
 - Você usará essas respostas na construção da página web (próxima etapa).
 
 ---
 
-### 5. Página webFattpr - upload e lista de resultados
+### 5. Página web - upload e lista de resultados
 
 - **Sua tarefa:** desenvolver uma **página web** que:
   1. Permita **upload de arquivo** (o mesmo arquivo CNAB 444 disponibilizado nesta prova).
