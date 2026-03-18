@@ -27,6 +27,40 @@ export default function DashboardPage() {
       <p>Welcome, {user.name || "User"}!</p>
       <p>Email: {user.email}</p>
       <div>
+        <form
+          action={() => {
+            //handle submit file
+          }}
+        >
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-blue-500 transition-colors">
+            <input
+              type="file"
+              name="cnabFile"
+              accept=".txt,.rem"
+              id="upload-file"
+              className="hidden"
+            />
+            <label htmlFor="upload-file" className="cursor-pointer block">
+              <span>Clique para selecionar ou arraste o arquivo aqui</span>
+              <p className="text-sm text-gray-500 mt-2">
+                Apenas arquivos .txt ou .rem são permitidos
+              </p>
+            </label>
+          </div>
+        </form>
+      </div>
+      <div>
+        <button
+          type="button"
+          onClick={() => {
+            //processar arquivo
+          }}
+          className="w-full bg-white text-black font-medium rounded-md px-4 py-2 hover:bg-gray-200"
+        >
+          Processar arquivo
+        </button>
+      </div>
+      <div>
         <button
           type="button"
           onClick={async () => {
