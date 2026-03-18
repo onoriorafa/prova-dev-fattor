@@ -2,11 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { signOut, useSession } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending } = authClient.useSession();
 
   useEffect(() => {
     if (!isPending && !session?.user) {
@@ -30,10 +30,10 @@ export default function DashboardPage() {
         <button
           type="button"
           onClick={async () => {
-            await signOut({
+            await authClient.signOut({
               fetchOptions: {
                 onSuccess: () => {
-                  router.push("/sign-in");
+                  router.push("/sign-in"); // redirect to login page
                 },
               },
             });
