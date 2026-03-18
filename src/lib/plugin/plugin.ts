@@ -37,9 +37,17 @@ export const fattorPlugin = () => {
             });
           }
 
-          const { token } = await fattorResponse.json();
-
-          console.log("Fattor Token:", token);
+          const schema = z.object({
+            token: z.string(),
+            expires_in: z.number(),
+          });
+          const { token, expires_in } = schema.parse(
+            await fattorResponse.json().catch(() => {
+              return ctx.error("BAD_REQUEST", {
+                message: "Resposta inválida da API do Fattor",
+              });
+            }),
+          );
 
           const user = await adapter.findOne<User>({
             model: "user",
@@ -52,9 +60,7 @@ export const fattorPlugin = () => {
             });
           }
 
-          const session = await internalAdapter.createSession(user.id, false, {
-            token: token,
-          });
+          const session = await internalAdapter.createSession(user.id);
 
           if (!session) {
             return ctx.error("INTERNAL_SERVER_ERROR", {
@@ -62,13 +68,33 @@ export const fattorPlugin = () => {
             });
           }
 
-          console.log("Created session:", session);
+          const updatedSession = await internalAdapter.updateSession(
+            session.token,
+            {
+              token,
+              expiresAt: new Date(Date.now() + expires_in * 1000),
+            },
+          );
 
-          await setSessionCookie(ctx, { session, user: user });
+          if (!updatedSession) {
+            return ctx.error("INTERNAL_SERVER_ERROR", {
+              message: "Falha ao atualizar sessão",
+            });
+          }
+
+          await setSessionCookie(ctx, {
+            session: {
+              ...updatedSession,
+              token: token,
+              expiresAt: new Date(Date.now() + expires_in * 1000),
+            },
+            user: user,
+          });
 
           return ctx.json({
-            ok: true,
+            success: true,
             token: token,
+            expires_in: expires_in,
           });
         },
       ),
