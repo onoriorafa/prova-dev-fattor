@@ -53,12 +53,18 @@ export const fattorPlugin = () => {
           }
 
           const session = await internalAdapter.createSession(user.id, false, {
-            tokenData: { fattorToken: token },
+            token: token,
           });
 
-          await setSessionCookie(ctx, { session, user: user });
+          if (!session) {
+            return ctx.error("INTERNAL_SERVER_ERROR", {
+              message: "Falha ao criar sessão",
+            });
+          }
 
           console.log("Created session:", session);
+
+          await setSessionCookie(ctx, { session, user: user });
 
           return ctx.json({
             ok: true,
