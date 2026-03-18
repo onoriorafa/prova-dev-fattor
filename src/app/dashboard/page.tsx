@@ -1,12 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { processCnabFile } from "@/functions/process-cnab-file";
 import { authClient } from "@/lib/auth-client";
 
 export default function DashboardPage() {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
+
+  const [file, setFile] = useState<File>();
 
   useEffect(() => {
     if (!isPending && !session?.user) {
@@ -39,13 +42,19 @@ export default function DashboardPage() {
               accept=".txt,.rem"
               id="upload-file"
               className="hidden"
+              onChange={(e) => setFile(e.target.files?.[0])}
             />
-            <label htmlFor="upload-file" className="cursor-pointer block">
-              <span>Clique para selecionar ou arraste o arquivo aqui</span>
-              <p className="text-sm text-gray-500 mt-2">
-                Apenas arquivos .txt ou .rem são permitidos
-              </p>
-            </label>
+            {!file ? (
+              <label htmlFor="upload-file" className="cursor-pointer block">
+                <span>Clique para selecionar ou arraste o arquivo aqui</span>
+                <p className="text-sm text-gray-500 mt-2">
+                  Apenas arquivos .txt ou .rem são permitidos
+                </p>
+              </label>
+              //<span className="text-gray-500">Nenhum arquivo selecionado</span>
+            ) : (
+              <span className="text-gray-500 mt-2">{file.name}</span>
+            )}
           </div>
         </form>
       </div>
@@ -53,7 +62,16 @@ export default function DashboardPage() {
         <button
           type="button"
           onClick={() => {
-            //processar arquivo
+            if (!file) {
+              alert("Por favor, selecione um arquivo antes de processar.");
+              return;
+            }
+            const promise = processCnabFile(file);
+            promise.then((result) => {
+              if (result.success) {
+                alert("Arquivo processado com sucesso! :)");
+              }
+            });
           }}
           className="w-full bg-white text-black font-medium rounded-md px-4 py-2 hover:bg-gray-200"
         >
