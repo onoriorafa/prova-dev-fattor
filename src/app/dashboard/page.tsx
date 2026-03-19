@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { type ChangeEvent, useState } from "react";
+import { type ChangeEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { processCnabFile } from "@/functions/process-cnab-file";
 import { authClient } from "@/lib/auth-client";
@@ -12,6 +12,12 @@ import { DataTable } from "./data-table";
 export default function DashboardPage() {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
+
+  useEffect(() => {
+    if (!isPending && !session) {
+      router.push("/");
+    }
+  }, [isPending, session, router]);
 
   const [file, setFile] = useState<File>();
   const [detalhes, setDetalhes] = useState<DetalheComSituacao[]>([]);
@@ -69,6 +75,12 @@ export default function DashboardPage() {
           const res = await fetch(
             `/api/cnab/status?key=${encodeURIComponent(row.chave_nfe)}`,
           );
+
+          if (res.status === 401) {
+            router.replace("/");
+            return;
+          }
+
           const data = await res.json();
 
           setDetalhes((prev) =>
@@ -94,10 +106,13 @@ export default function DashboardPage() {
           );
         }
       }),
-    );
-
-    setIsConsulting(false);
-    toast.success("Consulta de situação concluída.");
+    )
+      .then(() => {
+        toast.success("Consulta de situação concluída.");
+      })
+      .finally(() => {
+        setIsConsulting(false);
+      });
   }
 
   async function processFileWithToast(fileToProcess: File) {
