@@ -23,7 +23,7 @@ export const fattorPlugin = () => {
           } = ctx;
 
           const fattorResponse = await fetch(
-            "https://symphony.fattorcredito.com.br/public/prova-dev/login",
+            `${process.env.FATTOR_BASE_URL}/login`,
             {
               method: "POST",
               headers: { "content-type": "application/json" },

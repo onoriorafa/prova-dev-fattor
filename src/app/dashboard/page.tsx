@@ -3,13 +3,10 @@
 import { useRouter } from "next/navigation";
 import { type ChangeEvent, useState } from "react";
 import { toast } from "sonner";
-import {
-  type DetalheCNAB444,
-  processCnabFile,
-} from "@/functions/process-cnab-file";
+import { processCnabFile } from "@/functions/process-cnab-file";
 import { authClient } from "@/lib/auth-client";
 import Loading from "../loading";
-import { columns } from "./columns";
+import { columns, type DetalheComSituacao } from "./columns";
 import { DataTable } from "./data-table";
 
 export default function DashboardPage() {
@@ -17,9 +14,10 @@ export default function DashboardPage() {
   const { data: session, isPending } = authClient.useSession();
 
   const [file, setFile] = useState<File>();
-  const [detalhes, setDetalhes] = useState<DetalheCNAB444[]>([]);
-  const [selectedRows, setSelectedRows] = useState<DetalheCNAB444[]>([]);
+  const [detalhes, setDetalhes] = useState<DetalheComSituacao[]>([]);
+  const [selectedRows, setSelectedRows] = useState<DetalheComSituacao[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isConsulting, setIsConsulting] = useState(false);
 
   if (isPending) {
     return <Loading />;
@@ -44,6 +42,64 @@ export default function DashboardPage() {
     await processFileWithToast(file);
   }
 
+  async function consultarStatus() {
+    const linhasParaConsultar =
+      selectedRows.length > 0 ? selectedRows : detalhes;
+
+    if (linhasParaConsultar.length === 0) {
+      toast.error("Nenhum registro para consultar.");
+      return;
+    }
+
+    setIsConsulting(true);
+
+    // Marca todas as linhas como carregando
+    setDetalhes((prev) =>
+      prev.map((d) =>
+        linhasParaConsultar.some((r) => r.chave_nfe === d.chave_nfe)
+          ? { ...d, situacaoLoading: true, situacaoErro: false }
+          : d,
+      ),
+    );
+
+    // Consulta cada linha individualmente
+    await Promise.all(
+      linhasParaConsultar.map(async (row) => {
+        try {
+          const res = await fetch(
+            `/api/fattor/status?key=${encodeURIComponent(row.chave_nfe)}`,
+          );
+          const data = await res.json();
+
+          setDetalhes((prev) =>
+            prev.map((d) =>
+              d.chave_nfe === row.chave_nfe
+                ? {
+                    ...d,
+                    situacao:
+                      data.situacao ?? data.status ?? String(res.status),
+                    situacaoLoading: false,
+                    situacaoErro: !res.ok,
+                  }
+                : d,
+            ),
+          );
+        } catch {
+          setDetalhes((prev) =>
+            prev.map((d) =>
+              d.chave_nfe === row.chave_nfe
+                ? { ...d, situacaoLoading: false, situacaoErro: true }
+                : d,
+            ),
+          );
+        }
+      }),
+    );
+
+    setIsConsulting(false);
+    toast.success("Consulta de situação concluída.");
+  }
+
   async function processFileWithToast(fileToProcess: File) {
     setIsProcessing(true);
     const processPromise = (async () => {
@@ -51,7 +107,7 @@ export default function DashboardPage() {
 
       if (result.success) {
         const cnabData = result.values;
-        setDetalhes(cnabData?.detalhes ?? []);
+        setDetalhes((cnabData?.detalhes ?? []) as DetalheComSituacao[]);
         return result.message;
       } else {
         throw new Error(result.message || "Falha ao processar arquivo.");
@@ -162,6 +218,14 @@ export default function DashboardPage() {
               <span className="rounded-md bg-blue-900/40 px-3 py-1 text-xs text-blue-200">
                 {selectedRows.length} selecionado(s)
               </span>
+              <button
+                type="button"
+                onClick={consultarStatus}
+                disabled={detalhes.length === 0 || isConsulting}
+                className="app-button-primary"
+              >
+                Consultar
+              </button>
             </div>
           </div>
 
