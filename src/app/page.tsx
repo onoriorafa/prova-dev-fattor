@@ -1,11 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 
 export default function SignInPage() {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -23,8 +21,9 @@ export default function SignInPage() {
 
     if (res.error) {
       setError(res.error.message || "Something went wrong.");
+      setIsSubmitting(false);
     } else {
-      router.push("/dashboard");
+      window.location.href = "/dashboard";
     }
   }
 

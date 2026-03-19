@@ -29,11 +29,7 @@ export default function DashboardPage() {
     return <Loading />;
   }
 
-  if (!session?.user) {
-    return;
-  }
-
-  const { user } = session;
+  const userClient = session;
 
   async function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const selectedFile = e.target.files?.[0];
@@ -89,9 +85,11 @@ export default function DashboardPage() {
             <h1 className="app-title">Dashboard</h1>
             <p className="app-subtitle">
               Bem-vindo,{" "}
-              <span className="font-semibold">{user.name || "User"}</span>
+              <span className="font-semibold">
+                {userClient?.user?.name || "User"}
+              </span>
             </p>
-            <p className="text-xs text-slate-400">{user.email}</p>
+            <p className="text-xs text-slate-400">{userClient?.user?.email}</p>
           </div>
 
           <button
