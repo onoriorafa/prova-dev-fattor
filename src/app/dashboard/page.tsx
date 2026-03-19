@@ -67,7 +67,7 @@ export default function DashboardPage() {
       linhasParaConsultar.map(async (row) => {
         try {
           const res = await fetch(
-            `/api/fattor/status?key=${encodeURIComponent(row.chave_nfe)}`,
+            `/api/cnab/status?key=${encodeURIComponent(row.chave_nfe)}`,
           );
           const data = await res.json();
 
