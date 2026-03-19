@@ -66,12 +66,14 @@ export default function DashboardPage() {
               alert("Por favor, selecione um arquivo antes de processar.");
               return;
             }
-            const promise = processCnabFile(file);
-            promise.then((result) => {
-              if (result.success) {
-                alert("Arquivo processado com sucesso! :)");
-              }
+            const promise = processCnabFile(file).catch((err) => {
+              alert(`Erro: ${err.message}`);
             });
+            // promise.then((result) => {
+            //   if (result.success) {
+            //     alert("Arquivo processado com sucesso! :)");
+            //   }
+            // });
           }}
           className="w-full bg-white text-black font-medium rounded-md px-4 py-2 hover:bg-gray-200"
         >
