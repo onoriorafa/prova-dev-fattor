@@ -86,7 +86,7 @@ export async function processCnabFile(file: File) {
       };
     }
 
-    const content = await file.text();
+    const content = await file.text(); //remover os caracteres de retorno de carro para evitar problemas de quebra de linha
 
     if (!content) {
       return {
@@ -172,7 +172,11 @@ function parseCNAB444(content: string) {
 }
 
 function validateCnabContent(content: string) {
-  const linhas = content.split("\r\n").filter((line) => line.length > 0);
+  const linhas = content
+    .replace(/\r\n|\r/g, "\n")
+    .replace(/\n/g, "\r\n")
+    .split("\r\n")
+    .filter((line) => line.length > 0);
 
   //verificar se o arquivo está vazio
   if (linhas.length === 0) {
