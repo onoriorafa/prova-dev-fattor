@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL") // necessary for this prisma version
+  // url      = env("DATABASE_URL") // necessary for this prisma version
 }
 
 model User {
