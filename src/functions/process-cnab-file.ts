@@ -76,6 +76,16 @@ interface TrailerCNAB444 {
 //processar o arquivo CNAB
 export async function processCnabFile(file: File) {
   try {
+    const extension = file.name.split(".").pop()?.toLowerCase();
+
+    if (extension !== "txt" && extension !== "rem") {
+      return {
+        success: false,
+        message:
+          "Arquivo no formato inválido. Por favor, envie um arquivo .txt ou .rem",
+      };
+    }
+
     const content = await file.text();
 
     if (!content) {
