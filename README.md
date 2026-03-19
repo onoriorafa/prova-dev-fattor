@@ -34,7 +34,7 @@ npm install
 
 ### 2. (Opcional) Suba o PostgreSQL com Docker
 
-Se você nao tiver um PostgreSQL local/remoto, pode iniciar um container com:
+Se você não tiver um PostgreSQL local/remoto, pode iniciar um container com:
 
 ```bash
 docker compose --env-file docker/.env -f docker/docker-compose.yml up -d
@@ -48,7 +48,7 @@ docker compose -f docker/docker-compose.yml down
 
 OBS: Não esqueça de criar um arquivo `.env` para o docker
 
-```docker/env
+```env
 # Usuário do banco
 POSTGRES_USER="usuario"
 # Senha do banco
@@ -66,10 +66,10 @@ Crie um arquivo `.env` na raiz com:
 BETTER_AUTH_URL=http://localhost:3000
 
 # String de conexão com o banco de dados PostgreSQL
-DATABASE_URL=postgresql://usuario:senha@localhost:5432/nome_db
+DATABASE_URL=postgresql://usuario:senha@localhost:5432/meudb
 
 # URL base da API do Fattor
-FATTOR_STATUS_BASE_URL=https://symphony.fattorcredito.com.br/public/prova-dev
+FATTOR_BASE_URL=https://symphony.fattorcredito.com.br/public/prova-dev
 ```
 
 ### 4. Gere o Prisma Client
