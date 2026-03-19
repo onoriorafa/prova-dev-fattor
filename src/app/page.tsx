@@ -44,26 +44,46 @@ export default function SignInPage() {
           )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-            <input
-              name="email"
-              type="email"
-              placeholder="Email"
-              required
-              className="app-input"
-            />
-            <input
-              name="password"
-              type="password"
-              placeholder="Password"
-              required
-              className="app-input"
-            />
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="email"
+                className="text-sm font-medium text-slate-300"
+              >
+                E-mail
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="seu@email.com"
+                autoComplete="email"
+                required
+                className="app-input"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="password"
+                className="text-sm font-medium text-slate-300"
+              >
+                Senha
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="••••••••"
+                autoComplete="current-password"
+                required
+                className="app-input"
+              />
+            </div>
             <button
               type="submit"
               disabled={isSubmitting}
               className="app-button-primary mt-1 w-full"
             >
-              Sign In
+              {isSubmitting ? "Entrando..." : "Entrar"}
             </button>
           </form>
         </article>
