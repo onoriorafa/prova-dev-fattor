@@ -7,6 +7,7 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type RowSelectionState,
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
@@ -15,29 +16,95 @@ import * as React from "react";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  onSelectionChange?: (rows: TData[]) => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  onSelectionChange,
 }: DataTableProps<TData, TValue>) {
   const [globalFilter, setGlobalFilter] = React.useState("");
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
+
+  const selectionColumn = React.useMemo<ColumnDef<TData, TValue>>(
+    () => ({
+      id: "select",
+      enableSorting: false,
+      header: ({ table }) => (
+        <input
+          type="checkbox"
+          aria-label="Selecionar todas as linhas da página"
+          className="h-4 w-4 cursor-pointer rounded border border-slate-600 bg-slate-900 accent-blue-500 transition focus:ring-2 focus:ring-blue-400/40 focus:ring-offset-0"
+          checked={table.getIsAllPageRowsSelected()}
+          ref={(input) => {
+            if (input) {
+              input.indeterminate =
+                table.getIsSomePageRowsSelected() &&
+                !table.getIsAllPageRowsSelected();
+            }
+          }}
+          onChange={table.getToggleAllPageRowsSelectedHandler()}
+        />
+      ),
+      cell: ({ row }) => (
+        <input
+          type="checkbox"
+          aria-label="Selecionar linha"
+          className="h-4 w-4 cursor-pointer rounded border border-slate-600 bg-slate-900 accent-blue-500 transition focus:ring-2 focus:ring-blue-400/40 focus:ring-offset-0"
+          checked={row.getIsSelected()}
+          onChange={row.getToggleSelectedHandler()}
+        />
+      ),
+    }),
+    [],
+  );
+
+  const tableColumns = React.useMemo(
+    () => [selectionColumn, ...columns],
+    [selectionColumn, columns],
+  );
 
   const table = useReactTable({
     data,
-    columns,
+    columns: tableColumns,
+    enableRowSelection: true,
     state: {
       globalFilter,
       sorting,
+      rowSelection,
     },
     onGlobalFilterChange: setGlobalFilter,
     onSortingChange: setSorting,
+    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
+
+  React.useEffect(() => {
+    if (!onSelectionChange) return;
+    onSelectionChange(
+      table.getSelectedRowModel().rows.map((row) => row.original),
+    );
+  }, [onSelectionChange, table]);
+
+  const shouldIgnoreRowClick = React.useCallback(
+    (target: EventTarget | null) => {
+      if (!(target instanceof Element)) {
+        return false;
+      }
+
+      return Boolean(
+        target.closest(
+          'input,button,a,select,textarea,label,[role="button"],[role="link"]',
+        ),
+      );
+    },
+    [],
+  );
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -67,21 +134,17 @@ export function DataTable<TData, TValue>({
                     return (
                       <th
                         key={header.id}
-                        className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-300"
+                        className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-300 ${
+                          header.column.id === "select"
+                            ? "w-12 text-center"
+                            : ""
+                        }`}
                       >
-                        {header.isPlaceholder ? null : (
+                        {header.isPlaceholder ? null : canSort ? (
                           <button
                             type="button"
-                            onClick={
-                              canSort
-                                ? header.column.getToggleSortingHandler()
-                                : undefined
-                            }
-                            className={`inline-flex items-center gap-2 ${
-                              canSort
-                                ? "cursor-pointer transition hover:text-blue-300"
-                                : "cursor-default"
-                            }`}
+                            onClick={header.column.getToggleSortingHandler()}
+                            className="inline-flex items-center gap-2 cursor-pointer transition hover:text-blue-300"
                           >
                             {flexRender(
                               header.column.columnDef.header,
@@ -90,6 +153,11 @@ export function DataTable<TData, TValue>({
                             {sorted === "asc" && <span>↑</span>}
                             {sorted === "desc" && <span>↓</span>}
                           </button>
+                        ) : (
+                          flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )
                         )}
                       </th>
                     );
@@ -103,12 +171,21 @@ export function DataTable<TData, TValue>({
                 table.getRowModel().rows.map((row) => (
                   <tr
                     key={row.id}
-                    className="border-b border-slate-800/80 transition hover:bg-slate-800/40"
+                    className="cursor-pointer border-b border-slate-800/80 transition hover:bg-slate-800/40"
+                    onClick={(event) => {
+                      if (shouldIgnoreRowClick(event.target)) {
+                        return;
+                      }
+
+                      row.toggleSelected();
+                    }}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td
                         key={cell.id}
-                        className="px-4 py-3 text-sm text-slate-200 align-middle"
+                        className={`px-4 py-3 text-sm text-slate-200 align-middle ${
+                          cell.column.id === "select" ? "text-center" : ""
+                        }`}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,
@@ -121,7 +198,7 @@ export function DataTable<TData, TValue>({
               ) : (
                 <tr>
                   <td
-                    colSpan={columns.length}
+                    colSpan={tableColumns.length}
                     className="px-4 py-10 text-center text-sm text-slate-400"
                   >
                     Nenhum registro encontrado.

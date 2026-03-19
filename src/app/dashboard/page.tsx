@@ -18,6 +18,7 @@ export default function DashboardPage() {
 
   const [file, setFile] = useState<File>();
   const [detalhes, setDetalhes] = useState<DetalheCNAB444[]>([]);
+  const [selectedRows, setSelectedRows] = useState<DetalheCNAB444[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
   if (isPending) {
@@ -154,14 +155,23 @@ export default function DashboardPage() {
         <article className="app-card flex w-full flex-col gap-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Detalhes processados</h2>
-            <span className="rounded-md bg-slate-800 px-3 py-1 text-xs text-slate-300">
-              {detalhes.length} registro(s)
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="rounded-md bg-slate-800 px-3 py-1 text-xs text-slate-300">
+                {detalhes.length} registro(s)
+              </span>
+              <span className="rounded-md bg-blue-900/40 px-3 py-1 text-xs text-blue-200">
+                {selectedRows.length} selecionado(s)
+              </span>
+            </div>
           </div>
 
           <div className="flex w-full overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/40 p-2">
             <div className="min-w-full">
-              <DataTable columns={columns} data={detalhes} />
+              <DataTable
+                columns={columns}
+                data={detalhes}
+                onSelectionChange={setSelectedRows}
+              />
             </div>
           </div>
         </article>
