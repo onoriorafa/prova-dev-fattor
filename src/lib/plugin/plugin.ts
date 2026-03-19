@@ -49,6 +49,29 @@ export const fattorPlugin = () => {
             }),
           );
 
+          const userExist = await adapter.findOne<User>({
+            model: "user",
+            where: [{ field: "email", value: email }],
+          });
+
+          if (!userExist) {
+            const newUser = await adapter.create<User>({
+              model: "user",
+              data: {
+                email,
+                name: email.split("@")[0],
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                emailVerified: false,
+              },
+            });
+            if (!newUser) {
+              return ctx.error("INTERNAL_SERVER_ERROR", {
+                message: "Falha ao criar usuário novo",
+              });
+            }
+          }
+
           const user = await adapter.findOne<User>({
             model: "user",
             where: [{ field: "email", value: email }],
