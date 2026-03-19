@@ -26,7 +26,7 @@ interface HeaderCNAB444 {
   numero_sequencial?: string;
 }
 
-interface DetalheCNAB444 {
+export interface DetalheCNAB444 {
   linha: string;
   tipo_registro: string;
   cod_inscricao?: string;
@@ -87,6 +87,8 @@ export async function processCnabFile(file: File) {
   validateCnabContent(content);
 
   const parserData = parseCNAB444(content);
+
+  console.log(parserData);
 
   return {
     success: true,
