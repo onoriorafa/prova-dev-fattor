@@ -154,10 +154,7 @@ function parseCNAB444(content: string) {
 }
 
 function validateCnabContent(content: string) {
-  const linhas = content
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
+  const linhas = content.split("\r\n").filter((line) => line.length > 0);
 
   //verificar se o arquivo está vazio
   if (linhas.length === 0) {
@@ -171,17 +168,28 @@ function validateCnabContent(content: string) {
     throw new Error("O arquivo CNAB não possui um header válido.");
   }
 
-  //verificar se tem o detalhe (linhas intermediárias devem começar com 1)
-  const hasDetalhe = linhas.slice(1, -1).some((line) => line.startsWith("1"));
-
-  if (!hasDetalhe) {
-    throw new Error("O arquivo CNAB não possui um detalhe válido.");
-  }
-
   //verificar se tem o trailer (última linha deve começar com 9)
   const hasTrailer = linhas[linhas.length - 1]?.startsWith("9");
 
   if (!hasTrailer) {
     throw new Error("O arquivo CNAB não possui um trailer válido.");
+  }
+
+  //verificar se tem pelo menos um detalhe (linha entre header e trailer que NÃO começa com 1)
+  const notHasDetalhe = linhas
+    .filter((line) => line[0] !== "0" && line[0] !== "9")
+    .every((line) => line.startsWith("1"));
+
+  if (!notHasDetalhe) {
+    throw new Error("O arquivo CNAB não possui um detalhe válido.");
+  }
+
+  //verificar se cada linha tem exatamente 444 caracteres contando os espaços (tamanho padrão do CNAB 444)
+  const invalidLines = linhas.some((line) => line.length !== 444);
+
+  if (invalidLines) {
+    throw new Error(
+      "O arquivo CNAB não é válido. Cada linha deve conter exatamente 444 espaços.",
+    );
   }
 }
