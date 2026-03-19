@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { type ChangeEvent, useState } from "react";
+import { toast } from "sonner";
 import {
   type DetalheCNAB444,
   processCnabFile,
@@ -19,12 +20,6 @@ export default function DashboardPage() {
   const [detalhes, setDetalhes] = useState<DetalheCNAB444[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // useEffect(() => {
-  //   if (!isPending && !session?.user) {
-  //     router.push("/");
-  //   }
-  // }, [isPending, session, router]);
-
   if (isPending) {
     return <Loading />;
   }
@@ -36,42 +31,41 @@ export default function DashboardPage() {
     if (!selectedFile) return;
 
     setFile(selectedFile);
-    setIsProcessing(true);
-
-    try {
-      const result = await processCnabFile(selectedFile);
-      if (result.success) {
-        const cnabData = result.values;
-        setDetalhes(cnabData?.detalhes ?? []);
-      } else {
-        alert(`Erro: ${result.message}`);
-      }
-    } catch (err: any) {
-      alert(
-        `Erro inesperado: ${err?.message ?? "Falha ao processar arquivo."}`,
-      );
-    } finally {
-      setIsProcessing(false);
-    }
+    await processFileWithToast(selectedFile);
   }
 
   async function handleProcessFile() {
     if (!file) {
-      alert("Por favor, selecione um arquivo antes de processar.");
+      toast.error("Por favor, selecione um arquivo antes de processar.");
       return;
     }
 
+    await processFileWithToast(file);
+  }
+
+  async function processFileWithToast(fileToProcess: File) {
     setIsProcessing(true);
-    try {
-      const result = await processCnabFile(file);
+    const processPromise = (async () => {
+      const result = await processCnabFile(fileToProcess);
+
       if (result.success) {
         const cnabData = result.values;
         setDetalhes(cnabData?.detalhes ?? []);
+        return result.message;
       } else {
-        alert(`Erro: ${result.message}`);
+        throw new Error(result.message || "Falha ao processar arquivo.");
       }
-    } catch (err: any) {
-      alert(`Erro: ${err?.message ?? "Falha ao processar arquivo."}`);
+    })();
+
+    toast.promise(processPromise, {
+      loading: "Processando arquivo CNAB...",
+      success: (message) => message || "Arquivo processado com sucesso!",
+      error: (error) =>
+        error instanceof Error ? error.message : "Falha ao processar arquivo.",
+    });
+
+    try {
+      await processPromise;
     } finally {
       setIsProcessing(false);
     }
@@ -103,7 +97,7 @@ export default function DashboardPage() {
             }}
             className="app-button-secondary"
           >
-            Sign Out
+            Sair
           </button>
         </header>
 
