@@ -20,7 +20,8 @@ Aplicação web para upload, processamento e consulta de status de arquivos **CN
 ### Pré-requisitos
 
 - Node.js 20+
-- PostgreSQL acessível (local ou remoto)
+- Docker + Docker Compose (opcional, para subir PostgreSQL local)
+- PostgreSQL acessível (local, remoto, ou via Docker)
 - Conta com acesso à API Fattor
 
 ### 1. Clone e instale as dependências
@@ -31,7 +32,32 @@ cd prova-dev-fattor
 npm install
 ```
 
-### 2. Configure as variáveis de ambiente
+### 2. (Opcional) Suba o PostgreSQL com Docker
+
+Se você nao tiver um PostgreSQL local/remoto, pode iniciar um container com:
+
+```bash
+docker compose --env-file docker/.env -f docker/docker-compose.yml up -d
+```
+
+Para parar o container:
+
+```bash
+docker compose -f docker/docker-compose.yml down
+```
+
+OBS: Não esqueça de criar um arquivo `.env` para o docker
+
+```docker/env
+# Usuário do banco
+POSTGRES_USER="usuario"
+# Senha do banco
+POSTGRES_PASSWORD="senha"
+# Nome do banco
+POSTGRES_DB="meudb"
+```
+
+### 3. Configure as variáveis de ambiente
 
 Crie um arquivo `.env` na raiz com:
 
@@ -41,15 +67,9 @@ BETTER_AUTH_URL=http://localhost:3000
 
 # String de conexão com o banco de dados PostgreSQL
 DATABASE_URL=postgresql://usuario:senha@localhost:5432/nome_db
-;
+
 # URL base da API do Fattor
 FATTOR_STATUS_BASE_URL=https://symphony.fattorcredito.com.br/public/prova-dev
-```
-
-### 3. Execute as migrations do banco
-
-```bash
-npx prisma migrate deploy
 ```
 
 ### 4. Gere o Prisma Client
@@ -58,7 +78,13 @@ npx prisma migrate deploy
 npx prisma generate
 ```
 
-### 5. Inicie o servidor de desenvolvimento
+### 5. Execute as migrations do banco
+
+```bash
+npx prisma migrate dev --name init
+```
+
+### 6. Inicie o servidor de desenvolvimento
 
 ```bash
 npm run dev
