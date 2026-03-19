@@ -116,31 +116,35 @@ export default function DashboardPage() {
   }
 
   async function processFileWithToast(fileToProcess: File) {
-    setIsProcessing(true);
-    const processPromise = (async () => {
-      const result = await processCnabFile(fileToProcess);
-
-      if (result.success) {
-        const cnabData = result.values;
-        setDetalhes((cnabData?.detalhes ?? []) as DetalheComSituacao[]);
-        return result.message;
-      } else {
-        throw new Error(result.message || "Falha ao processar arquivo.");
-      }
-    })();
-
-    toast.promise(processPromise, {
-      loading: "Processando arquivo CNAB...",
-      success: (message) => message || "Arquivo processado com sucesso!",
-      error: (error) =>
-        error instanceof Error ? error.message : "Falha ao processar arquivo.",
-    });
-
     try {
-      await processPromise;
-    } finally {
-      setIsProcessing(false);
-    }
+      setIsProcessing(true);
+      const processPromise = (async () => {
+        const result = await processCnabFile(fileToProcess);
+
+        if (result.success) {
+          const cnabData = result.values;
+          setDetalhes((cnabData?.detalhes ?? []) as DetalheComSituacao[]);
+          return result.message;
+        } else {
+          throw new Error(result.message || "Falha ao processar arquivo.");
+        }
+      })();
+
+      toast.promise(processPromise, {
+        loading: "Processando arquivo CNAB...",
+        success: (message) => message || "Arquivo processado com sucesso!",
+        error: (error) =>
+          error instanceof Error
+            ? error.message
+            : "Falha ao processar arquivo.",
+      });
+
+      try {
+        await processPromise;
+      } finally {
+        setIsProcessing(false);
+      }
+    } catch {}
   }
 
   return (

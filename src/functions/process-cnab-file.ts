@@ -75,26 +75,34 @@ interface TrailerCNAB444 {
 
 //processar o arquivo CNAB
 export async function processCnabFile(file: File) {
-  const content = await file.text();
+  try {
+    const content = await file.text();
 
-  if (!content) {
+    if (!content) {
+      return {
+        success: false,
+        message: "Arquivo vazio ou inválido.",
+      };
+    }
+
+    //validar o conteúdo do arquivo CNAB
+    validateCnabContent(content);
+
+    //parsear o conteúdo do arquivo CNAB
+    const parserData = parseCNAB444(content);
+    console.log(parserData);
+
+    return {
+      success: true,
+      values: parserData,
+      message: `Arquivo ${file.name} processado com sucesso!`,
+    };
+  } catch (error) {
     return {
       success: false,
-      message: "Arquivo vazio ou inválido.",
+      message: (error as Error).message,
     };
   }
-
-  validateCnabContent(content);
-
-  const parserData = parseCNAB444(content);
-
-  console.log(parserData);
-
-  return {
-    success: true,
-    values: parserData,
-    message: `Arquivo ${file.name} processado com sucesso!`,
-  };
 }
 
 function parseCNAB444(content: string) {
