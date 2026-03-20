@@ -3,7 +3,12 @@
 import { useRouter } from "next/navigation";
 import { type ChangeEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { processCnabFile } from "@/functions/process-cnab-file";
+import { CnabInfoCard } from "@/components/cnab-info-card";
+import {
+  type HeaderCNAB444,
+  processCnabFile,
+  type TrailerCNAB444,
+} from "@/functions/process-cnab-file";
 import { authClient } from "@/lib/auth-client";
 import Loading from "../loading";
 import { columns, type DetalheComSituacao } from "./columns";
@@ -15,17 +20,23 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!isPending && !session) {
-      router.push("/");
+      router.replace("/");
     }
   }, [isPending, session, router]);
 
   const [file, setFile] = useState<File>();
   const [detalhes, setDetalhes] = useState<DetalheComSituacao[]>([]);
+  const [header, setHeader] = useState<HeaderCNAB444>();
+  const [trailer, setTrailer] = useState<TrailerCNAB444>();
   const [selectedRows, setSelectedRows] = useState<DetalheComSituacao[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isConsulting, setIsConsulting] = useState(false);
 
   if (isPending) {
+    return <Loading />;
+  }
+
+  if (!session) {
     return <Loading />;
   }
 
@@ -124,6 +135,8 @@ export default function DashboardPage() {
         if (result.success) {
           const cnabData = result.values;
           setDetalhes((cnabData?.detalhes ?? []) as DetalheComSituacao[]);
+          setHeader(cnabData?.header);
+          setTrailer(cnabData?.trailer);
           return result.message;
         } else {
           throw new Error(result.message || "Falha ao processar arquivo.");
@@ -226,6 +239,8 @@ export default function DashboardPage() {
             </div>
           </article>
         </div>
+
+        <CnabInfoCard header={header} trailer={trailer} />
 
         <article className="app-card flex w-full flex-col gap-4">
           <div className="flex items-center justify-between">

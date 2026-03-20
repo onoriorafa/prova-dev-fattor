@@ -8,7 +8,7 @@ function formatDateString(data: string): string {
   return `${dia}/${mes}/${ano}`;
 }
 
-interface HeaderCNAB444 {
+export interface HeaderCNAB444 {
   tipo_registro?: string;
   operacao?: string;
   literal_remessa?: string;
@@ -69,7 +69,7 @@ export interface DetalheCNAB444 {
   chave_nfe: string;
 }
 
-interface TrailerCNAB444 {
+export interface TrailerCNAB444 {
   quantidade?: string;
 }
 
