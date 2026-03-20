@@ -86,10 +86,9 @@ export function DataTable<TData, TValue>({
 
   React.useEffect(() => {
     if (!onSelectionChange) return;
-    onSelectionChange(
-      table.getSelectedRowModel().rows.map((row) => row.original),
-    );
-  }, [onSelectionChange, table]);
+    const selected = data.filter((_, i) => rowSelection[String(i)]);
+    onSelectionChange(selected);
+  }, [rowSelection, onSelectionChange, data]);
 
   const shouldIgnoreRowClick = React.useCallback(
     (target: EventTarget | null) => {
